@@ -5,18 +5,34 @@ import random
 
 class Derilict:
     objects = []
+    _img_cache = {}
 
-    def __init__(self, pos, obj_type) -> None:
+    def __init__(self, pos, sprite, rotation=None, vel=None) -> None:
         self.pos = pos
-        self.dir = Vector2(0, -1).rotate(random.randint(0, 360))
-        type = obj_type.split()
-        if type[0] == "ship":
-            self.img = pg.transform.rotate(
-                pg.image.load(f"Assets/{type[1]}.png"),
-                self.dir.angle_to(Vector2(0, -1)),
-            )
+        self.alive = True
+        self.hp = 20
+        self.hit_radius = 44
+        self.vel = vel.copy() if vel is not None else Vector2(0, 0)
+        if rotation is None:
+            rotation = random.randint(0, 360)
+        if sprite not in Derilict._img_cache:
+            img = pg.image.load(f"Assets/{sprite}.png").convert_alpha()
+            Derilict._img_cache[sprite] = pg.transform.grayscale(img)
+        self.img = pg.transform.rotate(Derilict._img_cache[sprite], rotation)
 
         Derilict.objects.append(self)
+
+    def take_hit(self, damage):
+        self.hp -= damage
+        if self.hp <= 0 and self.alive:
+            self.alive = False
+            if self in Derilict.objects:
+                Derilict.objects.remove(self)
+
+    def update(self, delta):
+        if self.vel.magnitude() > 0.5:
+            self.vel *= max(0, 1 - delta * 0.08)
+            self.pos += self.vel * delta
 
     def draw(self, camera):
         camera.surface.blit(
@@ -25,7 +41,8 @@ class Derilict:
 
     @staticmethod
     def update_all(delta):
-        pass
+        for obj in Derilict.objects:
+            obj.update(delta)
 
     @staticmethod
     def draw_all(camera):

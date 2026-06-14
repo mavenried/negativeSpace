@@ -3,4 +3,8 @@ from .controller import Controller
 from .camera import Camera
 from .gamedata import GameData
 from .ui import Ui
+from .sounds import Sounds
 from .derilict import Derilict
+from .torpedo import Torpedo
+from .explosion import Explosion
+from .ship import Ship
